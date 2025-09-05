@@ -1,6 +1,7 @@
-import { FileUpload } from "@/components/ui/file-upload";
-import { List2 } from "@/components/ui/list";
-import { IconMusic } from "@tabler/icons-react";
+
+import { IconMusic, IconChevronRight } from "@tabler/icons-react";
+import Upload from "@/components/home/upload";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   const items = [
@@ -39,21 +40,64 @@ export default function Home() {
       link: "#",
       icon: <IconMusic className="h-full text-neutral-500 dark:text-neutral-300" />,
     },
+    {
+      title: "All of Me",
+      category: "John Lennon",
+      description: "",
+      link: "#",
+      icon: <IconMusic className="h-full text-neutral-500 dark:text-neutral-300" />,
+    },
+    {
+      title: "All of Me",
+      category: "John Lennon",
+      description: "",
+      link: "#",
+      icon: <IconMusic className="h-full text-neutral-500 dark:text-neutral-300" />,
+    },
+    {
+      title: "All of Me",
+      category: "John Lennon",
+      description: "",
+      link: "#",
+      icon: <IconMusic className="h-full text-neutral-500 dark:text-neutral-300" />,
+    },
+    {
+      title: "All of Me",
+      category: "John Lennon",
+      description: "",
+      link: "#",
+      icon: <IconMusic className="h-full text-neutral-500 dark:text-neutral-300" />,
+    },
   ];
+
   return (
-    <div className="min-h-screen flex items-center p-4 md:p-8">
-      <div className="container mx-auto grid md:grid-cols-2 gap-8">
-        <div className="flex items-center justify-center">
-          <div className="w-full max-w-md">
-            <FileUpload />
-          </div>
-        </div>
-        <div className="max-h-[70vh] overflow-y-auto pr-4">
-          <List2
-          heading={`Recommended Tracks (${items.length})`}
-          items={items}
-          />
-        </div>
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-7xl mx-auto mt-20 sm:mt-6">
+        <Tabs defaultValue="upload" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto">
+            <TabsTrigger value="upload" className="flex items-center gap-1">
+              Upload <IconChevronRight className="h-4 w-4" />
+            </TabsTrigger>
+            <TabsTrigger value="edit" className="flex items-center gap-1">
+              Edit <IconChevronRight className="h-4 w-4" />
+            </TabsTrigger>
+            <TabsTrigger value="download" className="flex items-center gap-1">
+              Download <IconChevronRight className="h-4 w-4" />
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="upload" className="mt-6">
+            <Upload items={items} />
+          </TabsContent>
+          <TabsContent value="edit" className="mt-6">
+            <Upload items={items} />
+          </TabsContent>
+          <TabsContent value="download" className="mt-6">
+            <div className="text-center py-8">
+              <h3 className="text-lg font-medium">Download Content</h3>
+              <p className="text-muted-foreground mt-2">Download your files here</p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

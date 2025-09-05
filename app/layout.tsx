@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/theme-switch";
 import { FloatingDockDemo } from "@/components/navbar";
+import Logo from "@/components/logo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Logo />
           <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
             <FloatingDockDemo />
           </div>
