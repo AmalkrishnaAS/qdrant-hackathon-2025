@@ -2,6 +2,7 @@
 import { IconMusic, IconChevronRight } from "@tabler/icons-react";
 import Upload from "@/components/home/upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AudioCropper } from "@/components/home/audio-crop";
 
 export default function Home() {
   const items = [
@@ -89,7 +90,7 @@ export default function Home() {
             <Upload items={items} />
           </TabsContent>
           <TabsContent value="edit" className="mt-6">
-            <Upload items={items} />
+            <AudioCropper />
           </TabsContent>
           <TabsContent value="download" className="mt-6">
             <div className="text-center py-8">
