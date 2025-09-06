@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Qdrant Frontend
 
-## Getting Started
+## Prerequisites
 
-First, run the development server:
+- Node.js 18.17 or later
+- npm, yarn, pnpm, or bun package manager
+- [Shadcn UI](https://ui.shadcn.com/) - UI component library
+- [Aceternity UI](https://ui.aceternity.com/) - Animated UI components
+
+## Setup
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd qdrant-frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
+
+## Development
+
+1. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
+
+2. Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
+
+3. The application will automatically reload when you make changes to the source files.
+
+## Using Shadcn UI Components
+
+This project uses [Shadcn UI](https://ui.shadcn.com/), a collection of reusable components built using Radix UI and Tailwind CSS.
+
+### Adding New Components
+
+To add a new Shadcn component:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx shadcn-ui@latest add <component-name>
+# Example:
+# npx shadcn-ui@latest add button
+# npx shadcn-ui@latest add dropdown-menu
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will:
+1. Add the component to `components/ui/`
+2. Update any necessary dependencies
+3. Make the component ready to import and use in your application
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Using Components
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Import and use components like this:
 
-## Learn More
+```tsx
+import { Button } from "@/components/ui/button"
 
-To learn more about Next.js, take a look at the following resources:
+export default function Home() {
+  return (
+    <div>
+      <Button>Click me</Button>
+    </div>
+  )
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Theming
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project uses the `new-york` style from Shadcn UI. You can customize the theme in the following files:
+- `app/globals.css` - Contains the base styles and theme variables
+- `components/theme-provider.tsx` - Handles theme switching (light/dark mode)
+- `tailwind.config.js` - Contains the Tailwind CSS configuration
 
-## Deploy on Vercel
+## Using Aceternity UI Components
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project also includes [Aceternity UI](https://ui.aceternity.com/), a collection of beautiful, animated UI components built with Framer Motion and Tailwind CSS.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Installation
+
+Aceternity UI components are already installed in this project. If you need to add new components, you can install them using the instructions in the website
+
+
+### Using Components
+
+Import and use Aceternity UI components like this:
+
+```tsx
+'use client';
+import { WobbleCard } from "@/components/ui/wobble-card";
+
+export default function Home() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto w-full">
+      <WobbleCard>
+        <h2 className="text-2xl font-bold">Aceternity UI</h2>
+        <p className="mt-2 text-sm">Beautiful, animated UI components</p>
+      </WobbleCard>
+    </div>
+  )
+}
+```
+
+### Available Components
+
+Some of the available Aceternity UI components include:
+- Animated backgrounds
+- Card effects
+- Hover effects
+- Navigation components
+- And many more...
+
+Visit the [Aceternity UI documentation](https://ui.aceternity.com/docs) for a complete list of components and their usage.
+
+## Building for Production
+
+To create a production build:
+
+```bash
+npm run build
+# or
+yarn build
+# or
+pnpm build
+# or
+bun run build
+```
+
+To start the production server:
+
+```bash
+npm start
+# or
+yarn start
+# or
+pnpm start
+# or
+bun start
+```
