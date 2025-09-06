@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider"
 import { Play, Pause, RotateCcw, Send, Music } from "lucide-react"
 
 type AudioCropperProps = {
+  videoUrl?: string,
   audioUrl?: string
 }
 
@@ -18,7 +19,10 @@ declare global {
   }
 }
 
-export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }: AudioCropperProps) {
+export function AudioCropper({
+  audioUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ",
+videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
+}: AudioCropperProps) {
   const [player, setPlayer] = useState<any>(null)
   const [isYouTubeReady, setIsYouTubeReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -31,9 +35,11 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
   const WINDOW_DURATION = 30
-  const playerRef = useRef<HTMLDivElement>(null)
+  const audioPlayerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout>(null)
+  const lastTimeRef = useRef<number>(0)
+  const stuckCountRef = useRef<number>(0)
 
   const extractVideoId = useCallback((url: string) => {
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
@@ -60,7 +66,7 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
     ctx.fillStyle = "#ffffff"
     ctx.fillRect(0, 0, width, height)
 
-    ctx.strokeStyle = "#a0aec0" // gray-400
+    ctx.strokeStyle = "#a0aec0"
     ctx.lineWidth = 0.5
     ctx.beginPath()
 
@@ -105,11 +111,11 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
   }, [windowStart, currentTime, duration, WINDOW_DURATION, generateSyntheticWaveform])
 
   const loadYouTubeVideo = useCallback(() => {
-    const videoId = extractVideoId(audioUrl)
-    if (!videoId || !playerRef.current) return
+    const videoId = extractVideoId(videoUrl)
+    if (!videoId || !audioPlayerRef.current) return
 
     setIsLoading(true)
-    const newPlayer = new window.YT.Player(playerRef.current, {
+    const newPlayer = new window.YT.Player(audioPlayerRef.current, {
       height: "0",
       width: "0",
       videoId: videoId,
@@ -127,9 +133,9 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
       },
     })
     setPlayer(newPlayer)
-  }, [audioUrl, extractVideoId, generateSyntheticWaveform])
+  }, [videoUrl, extractVideoId, generateSyntheticWaveform])
 
-  // Effect to initialize YouTube API and load video
+  // Init API
   useEffect(() => {
     const initYouTubeAPI = () => {
       if (window.YT && window.YT.Player) {
@@ -148,22 +154,37 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
     }
   }, [])
 
-  // Effect to load the video once API is ready
   useEffect(() => {
     if (isYouTubeReady && !player) {
       loadYouTubeVideo()
     }
   }, [isYouTubeReady, player, loadYouTubeVideo])
 
-  // Effect for time tracking and waveform redrawing
   useEffect(() => {
-    drawWaveformOverlay() // Redraw on state change
+    drawWaveformOverlay()
 
     if (player && typeof player.getCurrentTime === "function") {
       if (timeUpdateIntervalRef.current) clearInterval(timeUpdateIntervalRef.current)
       timeUpdateIntervalRef.current = setInterval(() => {
         const current = player.getCurrentTime()
+
+        if (isPlaying && Math.abs(current - lastTimeRef.current) < 0.01) {
+          stuckCountRef.current += 1
+          // If stuck for more than 2 seconds (20 intervals), try to recover
+          if (stuckCountRef.current > 20) {
+            console.log("[v0] Player appears stuck, attempting recovery")
+            // Try seeking forward by 0.1 seconds to unstick the player
+            player.seekTo(current + 0.1, true)
+            player.playVideo()
+            stuckCountRef.current = 0
+          }
+        } else {
+          stuckCountRef.current = 0
+        }
+
+        lastTimeRef.current = current
         setCurrentTime(current)
+
         if (isPreviewMode && current >= windowStart + WINDOW_DURATION) {
           player.pauseVideo()
         }
@@ -173,7 +194,7 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
     return () => {
       if (timeUpdateIntervalRef.current) clearInterval(timeUpdateIntervalRef.current)
     }
-  }, [player, isPreviewMode, windowStart, drawWaveformOverlay])
+  }, [player, isPreviewMode, windowStart, drawWaveformOverlay, WINDOW_DURATION, isPlaying])
 
   const handlePlayPause = () => {
     if (!player) return
@@ -182,7 +203,12 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
     } else {
       const playStartTime = isPreviewMode && currentTime < windowStart ? windowStart : currentTime
       player.seekTo(playStartTime, true)
-      player.playVideo()
+      setTimeout(() => {
+        player.playVideo()
+        // Reset stuck counter when manually starting playback
+        stuckCountRef.current = 0
+        lastTimeRef.current = playStartTime
+      }, 100)
     }
   }
 
@@ -215,7 +241,7 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          audioUrl,
+          videoUrl,
           startTime: windowStart,
           endTime: windowStart + WINDOW_DURATION,
         }),
@@ -231,64 +257,104 @@ export function AudioCropper({ audioUrl = "https://www.youtube.com/watch?v=dQw4w
     }
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Music className="w-5 h-5 text-blue-500" />
-          Audio Snippet Selector
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">Select a 30-second window from the YouTube audio.</p>
-      </CardHeader>
-      <CardContent>
-        <div ref={playerRef} style={{ display: "none" }} />
+  const videoId = extractVideoId(videoUrl)
 
-        {isLoading || duration === 0 ? (
-          <div className="flex items-center justify-center h-48 border rounded-md bg-muted">
-            <p className="text-muted-foreground animate-pulse">
-              {isYouTubeReady ? "Loading Audio..." : "Initializing Player..."}
-            </p>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {/* Left: looping video */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">Video Preview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-96 w-full rounded-lg overflow-hidden shadow-lg">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&origin=${typeof window !== "undefined" ? window.location.origin : ""}`}
+              title="YouTube Video"
+              className="w-full h-full"
+              allow="encrypted-media"
+              allowFullScreen
+              onError={() => console.log("[v0] YouTube iframe failed to load")}
+            />
           </div>
-        ) : (
-          <>
-            <canvas ref={canvasRef} width={800} height={150} className="w-full border rounded-md cursor-pointer bg-white" onClick={handleCanvasClick} />
-            <div className="mt-4">
-              <Slider
-                value={[windowStart]}
-                onValueChange={([value]) => setWindowStart(value)}
-                max={Math.max(0, duration - WINDOW_DURATION)}
-                step={0.1}
+        </CardContent>
+      </Card>
+
+      {/* Right: audio cropper */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Music className="w-5 h-5 text-blue-500" />
+            Audio Snippet Selector
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">Select a 30-second window from the YouTube audio.</p>
+        </CardHeader>
+        <CardContent>
+          <div ref={audioPlayerRef} style={{ display: "none" }} />
+
+          {isLoading || duration === 0 ? (
+            <div className="flex items-center justify-center h-48 border rounded-md bg-muted">
+              <p className="text-muted-foreground animate-pulse">
+                {isYouTubeReady ? "Loading Audio..." : "Initializing Player..."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <canvas
+                ref={canvasRef}
+                width={800}
+                height={150}
+                className="w-full border rounded-md cursor-pointer bg-white"
+                onClick={handleCanvasClick}
               />
-              <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                <span>Start: {formatTime(windowStart)}</span>
-                <span>End: {formatTime(windowStart + WINDOW_DURATION)}</span>
-                <span>Total: {formatTime(duration)}</span>
+              <div className="mt-4">
+                <Slider
+                  value={[windowStart]}
+                  onValueChange={([value]) => setWindowStart(value)}
+                  max={Math.max(0, duration - WINDOW_DURATION)}
+                  step={0.1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                  <span>Start: {formatTime(windowStart)}</span>
+                  <span>End: {formatTime(windowStart + WINDOW_DURATION)}</span>
+                  <span>Total: {formatTime(duration)}</span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 mt-6">
-              <Button onClick={handlePlayPause} size="icon" variant="outline" title={isPlaying ? "Pause" : "Play"}>
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </Button>
-              <Button onClick={handleReset} size="icon" variant="outline" title="Reset Position">
-                <RotateCcw className="w-4 h-4" />
-              </Button>
-              <Button onClick={() => setIsPreviewMode(!isPreviewMode)} variant={isPreviewMode ? "secondary" : "outline"} size="sm">
-                Preview Window {isPreviewMode ? "On" : "Off"}
-              </Button>
-              <div className="flex-grow" />
-              <Button onClick={submitTimestamps} disabled={isSubmitting}>
-                <Send className="w-4 h-4 mr-2" />
-                {isSubmitting ? "Submitting..." : "Submit Selection"}
-              </Button>
-            </div>
-            {submitSuccess && (
-              <div className="mt-4 text-sm text-green-700 p-3 bg-green-50 border border-green-200 rounded-lg">
-                ✅ Success! Submitted window: {formatTime(windowStart)} - {formatTime(windowStart + WINDOW_DURATION)}
+              <div className="flex items-center gap-2 mt-6">
+                <Button onClick={handlePlayPause} size="icon" variant="outline" title={isPlaying ? "Pause" : "Play"}>
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </Button>
+                <Button onClick={handleReset} size="icon" variant="outline" title="Reset Position">
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => setIsPreviewMode(!isPreviewMode)}
+                  variant={isPreviewMode ? "secondary" : "outline"}
+                  size="sm"
+                >
+                  Preview Window {isPreviewMode ? "On" : "Off"}
+                </Button>
+                <div className="flex-grow" />
               </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+              <div className="w-full mt-4">
+                <Button 
+                  onClick={submitTimestamps} 
+                  disabled={isSubmitting}
+                  className="w-full py-6 text-base"
+                >
+                  <Send className="w-5 h-5 mr-2" />
+                  {isSubmitting ? "Processing..." : "Save Audio Selection"}
+                </Button>
+              </div>
+              {submitSuccess && (
+                <div className="mt-4 text-sm text-green-700 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  ✅ Success! Submitted window: {formatTime(windowStart)} - {formatTime(windowStart + WINDOW_DURATION)}
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }
