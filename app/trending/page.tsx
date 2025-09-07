@@ -1,16 +1,23 @@
 import React from 'react'
+import Image from 'next/image'
 import { Separator } from '@/components/ui/separator'
-
-const index = () => {
+import { items as defaultItems } from '@/app/data'
+import ExpandableCardDemo from '@/components/expandable-card-demo-grid'
+import Title from '@/components/title'
+const index = async () => {
   return (
     <div
-    className='min-h-screen p-4 md:p-12 mt-20 max-w-8xl mx-auto'
+    className='min-h-screen p-4 md:p-12 mt-20 max-w-7xl mx-auto'
     >
-      <div className='flex justify-center flex-col gap-1.5 '>
-      <h1 className='text-3xl font-semibold'>Trending</h1>
-      <h2 className='text-lg text-muted-foreground'>Check out new releases</h2>
-      </div>
-    </div>
+     <Title
+     title="Trending"
+     description="Check out new releases"
+     />
+     <ExpandableCardDemo
+     cards={defaultItems}
+     />
+    
+     </div>
   )
 }
 

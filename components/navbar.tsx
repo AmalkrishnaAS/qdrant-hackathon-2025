@@ -23,7 +23,7 @@ export function FloatingDockDemo() {
       icon: (
         <IconSparkles className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
-      href: "#",
+      href: "/",
     },
 
     {
@@ -46,7 +46,7 @@ export function FloatingDockDemo() {
         <IconTrendingUp className="h-full w-full text-neutral-500 dark:text-neutral-300" />
 
       ),
-      href: "#",
+      href: "trending",
     },
     {
       title: "Settings",
