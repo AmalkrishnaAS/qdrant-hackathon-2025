@@ -8,8 +8,8 @@ import { Slider } from "@/components/ui/slider"
 import { Play, Pause, RotateCcw, Send, Music } from "lucide-react"
 
 type AudioCropperProps = {
-  videoUrl?: string,
-  audioUrl?: string
+  audioUrl: string
+  className?: string
 }
 
 declare global {
@@ -19,10 +19,7 @@ declare global {
   }
 }
 
-export function AudioCropper({
-  audioUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ",
-videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
-}: AudioCropperProps) {
+export function AudioCropper({ audioUrl, className = "" }: AudioCropperProps) {
   const [player, setPlayer] = useState<any>(null)
   const [isYouTubeReady, setIsYouTubeReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -44,6 +41,7 @@ videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
   const extractVideoId = useCallback((url: string) => {
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
     const match = url.match(regex)
+    console.log("[v0] Extracted video ID:", match ? match[1] : "none")
     return match ? match[1] : null
   }, [])
 
@@ -111,9 +109,13 @@ videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
   }, [windowStart, currentTime, duration, WINDOW_DURATION, generateSyntheticWaveform])
 
   const loadYouTubeVideo = useCallback(() => {
-    const videoId = extractVideoId(videoUrl)
-    if (!videoId || !audioPlayerRef.current) return
+    const videoId = extractVideoId(audioUrl)
+    if (!videoId || !audioPlayerRef.current) {
+      console.log("[v0] Cannot load YouTube video - missing video ID or ref")
+      return
+    }
 
+    console.log("[v0] Loading YouTube video with ID:", videoId)
     setIsLoading(true)
     const newPlayer = new window.YT.Player(audioPlayerRef.current, {
       height: "0",
@@ -133,18 +135,23 @@ videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
       },
     })
     setPlayer(newPlayer)
-  }, [videoUrl, extractVideoId, generateSyntheticWaveform])
+  }, [audioUrl, extractVideoId, generateSyntheticWaveform])
 
   // Init API
   useEffect(() => {
     const initYouTubeAPI = () => {
       if (window.YT && window.YT.Player) {
+        console.log("[v0] YouTube API already loaded")
         setIsYouTubeReady(true)
       } else {
+        console.log("[v0] Loading YouTube API")
         const tag = document.createElement("script")
         tag.src = "https://www.youtube.com/iframe_api"
         document.head.appendChild(tag)
-        window.onYouTubeIframeAPIReady = () => setIsYouTubeReady(true)
+        window.onYouTubeIframeAPIReady = () => {
+          console.log("[v0] YouTube API ready")
+          setIsYouTubeReady(true)
+        }
       }
     }
     initYouTubeAPI()
@@ -170,10 +177,8 @@ videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
 
         if (isPlaying && Math.abs(current - lastTimeRef.current) < 0.01) {
           stuckCountRef.current += 1
-          // If stuck for more than 2 seconds (20 intervals), try to recover
           if (stuckCountRef.current > 20) {
             console.log("[v0] Player appears stuck, attempting recovery")
-            // Try seeking forward by 0.1 seconds to unstick the player
             player.seekTo(current + 0.1, true)
             player.playVideo()
             stuckCountRef.current = 0
@@ -205,7 +210,6 @@ videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
       player.seekTo(playStartTime, true)
       setTimeout(() => {
         player.playVideo()
-        // Reset stuck counter when manually starting playback
         stuckCountRef.current = 0
         lastTimeRef.current = playStartTime
       }, 100)
@@ -241,7 +245,7 @@ videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          videoUrl,
+          audioUrl,
           startTime: windowStart,
           endTime: windowStart + WINDOW_DURATION,
         }),
@@ -257,104 +261,100 @@ videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ"
     }
   }
 
-  const videoId = extractVideoId(videoUrl)
+  console.log("[v0] AudioCropper received URL:", audioUrl)
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-      {/* Left: looping video */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">Video Preview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-96 w-full rounded-lg overflow-hidden shadow-lg">
-            <iframe
-              src={`https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&origin=${typeof window !== "undefined" ? window.location.origin : ""}`}
-              title="YouTube Video"
-              className="w-full h-full"
-              allow="encrypted-media"
-              allowFullScreen
-              onError={() => console.log("[v0] YouTube iframe failed to load")}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Right: audio cropper */}
-      <Card className="w-full">
+  // Don't proceed if URL is empty
+  if (!audioUrl || audioUrl.trim() === "") {
+    return (
+      <Card className={`w-full ${className}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Music className="w-5 h-5 text-blue-500" />
             Audio Snippet Selector
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Select a 30-second window from the YouTube audio.</p>
+          <p className="text-sm text-muted-foreground">Select a 30-second window from the audio.</p>
         </CardHeader>
         <CardContent>
-          <div ref={audioPlayerRef} style={{ display: "none" }} />
-
-          {isLoading || duration === 0 ? (
-            <div className="flex items-center justify-center h-48 border rounded-md bg-muted">
-              <p className="text-muted-foreground animate-pulse">
-                {isYouTubeReady ? "Loading Audio..." : "Initializing Player..."}
-              </p>
+          <div className="flex items-center justify-center h-48 border rounded-md bg-muted">
+            <div className="text-red-500 text-center">
+              <p>No audio URL provided</p>
+              <p className="text-sm text-gray-500 mt-1">Please provide a valid YouTube URL</p>
             </div>
-          ) : (
-            <>
-              <canvas
-                ref={canvasRef}
-                width={800}
-                height={150}
-                className="w-full border rounded-md cursor-pointer bg-white"
-                onClick={handleCanvasClick}
-              />
-              <div className="mt-4">
-                <Slider
-                  value={[windowStart]}
-                  onValueChange={([value]) => setWindowStart(value)}
-                  max={Math.max(0, duration - WINDOW_DURATION)}
-                  step={0.1}
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>Start: {formatTime(windowStart)}</span>
-                  <span>End: {formatTime(windowStart + WINDOW_DURATION)}</span>
-                  <span>Total: {formatTime(duration)}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 mt-6">
-                <Button onClick={handlePlayPause} size="icon" variant="outline" title={isPlaying ? "Pause" : "Play"}>
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </Button>
-                <Button onClick={handleReset} size="icon" variant="outline" title="Reset Position">
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={() => setIsPreviewMode(!isPreviewMode)}
-                  variant={isPreviewMode ? "secondary" : "outline"}
-                  size="sm"
-                >
-                  Preview Window {isPreviewMode ? "On" : "Off"}
-                </Button>
-                <div className="flex-grow" />
-              </div>
-              <div className="w-full mt-4">
-                <Button 
-                  onClick={submitTimestamps} 
-                  disabled={isSubmitting}
-                  className="w-full py-6 text-base"
-                >
-                  <Send className="w-5 h-5 mr-2" />
-                  {isSubmitting ? "Processing..." : "Save Audio Selection"}
-                </Button>
-              </div>
-              {submitSuccess && (
-                <div className="mt-4 text-sm text-green-700 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  ✅ Success! Submitted window: {formatTime(windowStart)} - {formatTime(windowStart + WINDOW_DURATION)}
-                </div>
-              )}
-            </>
-          )}
+          </div>
         </CardContent>
       </Card>
-    </div>
+    )
+  }
+
+  return (
+    <Card className={`w-full ${className}`}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Music className="w-5 h-5 text-blue-500" />
+          Audio Snippet Selector
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">Select a 30-second window from the audio.</p>
+      </CardHeader>
+      <CardContent>
+        <div ref={audioPlayerRef} style={{ display: "none" }} />
+
+        {isLoading || duration === 0 ? (
+          <div className="flex items-center justify-center h-48 border rounded-md bg-muted">
+            <p className="text-muted-foreground animate-pulse">
+              {isYouTubeReady ? "Loading Audio..." : "Initializing Player..."}
+            </p>
+          </div>
+        ) : (
+          <>
+            <canvas
+              ref={canvasRef}
+              width={800}
+              height={150}
+              className="w-full border rounded-md cursor-pointer bg-white"
+              onClick={handleCanvasClick}
+            />
+            <div className="mt-4">
+              <Slider
+                value={[windowStart]}
+                onValueChange={([value]) => setWindowStart(value)}
+                max={Math.max(0, duration - WINDOW_DURATION)}
+                step={0.1}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                <span>Start: {formatTime(windowStart)}</span>
+                <span>End: {formatTime(windowStart + WINDOW_DURATION)}</span>
+                <span>Total: {formatTime(duration)}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mt-6">
+              <Button onClick={handlePlayPause} size="icon" variant="outline" title={isPlaying ? "Pause" : "Play"}>
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </Button>
+              <Button onClick={handleReset} size="icon" variant="outline" title="Reset Position">
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                variant={isPreviewMode ? "secondary" : "outline"}
+                size="sm"
+              >
+                Preview Window {isPreviewMode ? "On" : "Off"}
+              </Button>
+            </div>
+            <div className="w-full mt-4">
+              <Button onClick={submitTimestamps} disabled={isSubmitting} className="w-full py-6 text-base">
+                <Send className="w-5 h-5 mr-2" />
+                {isSubmitting ? "Processing..." : "Save Audio Selection"}
+              </Button>
+            </div>
+            {submitSuccess && (
+              <div className="mt-4 text-sm text-green-700 p-3 bg-green-50 border border-green-200 rounded-lg">
+                ✅ Success! Submitted window: {formatTime(windowStart)} - {formatTime(windowStart + WINDOW_DURATION)}
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
 }
