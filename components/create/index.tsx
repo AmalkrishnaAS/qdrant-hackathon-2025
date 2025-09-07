@@ -2,9 +2,9 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IconChevronRight } from "@tabler/icons-react"
-import Upload from "./upload"
+import Upload from "./upload/upload"
 import { AudioVideoSplitter } from "./edit"
-import { items } from "@/app/data"
+import DownloadTab from "./download"
 import { CreateProvider, useCreate } from "@/context/create-context"
 
 const CreateTabs = () => {
@@ -28,16 +28,13 @@ const CreateTabs = () => {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="upload" className="mt-6">
-        <Upload items={items} />
+        <Upload  />
       </TabsContent>
       <TabsContent value="edit" className="mt-6">
         <AudioVideoSplitter videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" />
       </TabsContent>
       <TabsContent value="download" className="mt-6">
-        <div className="text-center py-8">
-          <h3 className="text-lg font-medium">Download Content</h3>
-          <p className="text-muted-foreground mt-2">Download your files here</p>
-        </div>
+        <DownloadTab />
       </TabsContent>
     </Tabs>
   )

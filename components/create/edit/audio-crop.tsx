@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { Play, Pause, RotateCcw, Send, Music } from "lucide-react"
+import { useCreate } from "@/context/create-context"
 
 type AudioCropperProps = {
   audioUrl: string
@@ -20,6 +21,7 @@ declare global {
 }
 
 export function AudioCropper({ audioUrl, className = "" }: AudioCropperProps) {
+  const { setActiveTab } = useCreate();
   const [player, setPlayer] = useState<any>(null)
   const [isYouTubeReady, setIsYouTubeReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -253,6 +255,7 @@ export function AudioCropper({ audioUrl, className = "" }: AudioCropperProps) {
       if (response.ok) {
         setSubmitSuccess(true)
         setTimeout(() => setSubmitSuccess(false), 3000)
+        setActiveTab('download')
       }
     } catch (error) {
       console.error("Error submitting timestamps:", error)
