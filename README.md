@@ -43,6 +43,20 @@
 
 3. The application will automatically reload when you make changes to the source files.
 
+## Environment Variables
+
+Create a `.env.local` file in the project root with the following variables:
+
+```bash
+# Next.js public env vars (exposed to browser)
+NEXT_PUBLIC_YOUTUBE_API_KEY=your_youtube_data_api_v3_key
+
+# API base for your Flask-RESTX server (optional override)
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+```
+
+After changing env variables, restart the dev server.
+
 ## Using Shadcn UI Components
 
 This project uses [Shadcn UI](https://ui.shadcn.com/), a collection of reusable components built using Radix UI and Tailwind CSS.
