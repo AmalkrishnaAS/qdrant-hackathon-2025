@@ -4,12 +4,18 @@ import Image from 'next/image'
 import { fetchYouTubeItems } from '@/lib/youtube'
 import ExpandableCardDemo from '@/components/expandable-card-demo-grid'
 import Title from '@/components/title'
+import { cookies } from 'next/headers'
+import { formatRegionLabel } from '@/lib/regions'
 const index = async () => {
   const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
+  const cookieStore = await cookies()
+  const region = cookieStore.get('trending_region')?.value || 'US'
+  const countCookie = cookieStore.get('trending_count')?.value
+  const count = countCookie ? Math.max(1, Math.min(50, parseInt(countCookie, 10) || 12)) : 12
   let trending = []
   if (apiKey) {
     try {
-      trending = await fetchYouTubeItems({ apiKey, count: 12 }) as any
+      trending = await fetchYouTubeItems({ apiKey, count, regionCode: region }) as any
     } catch (e) {
       // fall back to defaults on error
       trending = []
@@ -21,7 +27,7 @@ const index = async () => {
     >
      <Title
      title="Trending"
-     description="Check out new releases"
+     description={`Showing ${count} trends for ${formatRegionLabel(region)}`}
      />
      <ExpandableCardDemo
      cards={trending as any}

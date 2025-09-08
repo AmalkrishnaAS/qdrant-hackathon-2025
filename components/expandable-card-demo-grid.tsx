@@ -90,7 +90,7 @@ export default function ExpandableCardDemo({ cards }: ExpandableCardDemoProps) {
                   <div className="">
                     <motion.h3
                       layoutId={`title-${active.title}-${id}`}
-                      className="font-medium text-neutral-700 dark:text-neutral-200 text-base"
+                      className="font-medium text-neutral-700 dark:text-neutral-200 text-base line-clamp-2"
                     >
                       {active.title}
                     </motion.h3>
@@ -128,7 +128,7 @@ export default function ExpandableCardDemo({ cards }: ExpandableCardDemoProps) {
                     className="text-neutral-600 text-xs md:text-sm lg:text-base h-40 md:h-fit pb-10 flex flex-col items-start gap-4 overflow-auto dark:text-neutral-400 [mask:linear-gradient(to_bottom,white,white,transparent)] [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
                   >
                     <div className="flex flex-col gap-2">
-                      <p>{active.description}</p>
+                      <p className="line-clamp-4">{active.description}</p>
                       <p className="text-sm text-neutral-500">
                         {active.artists.join(', ')} • {active.album}
                       </p>
@@ -164,7 +164,7 @@ export default function ExpandableCardDemo({ cards }: ExpandableCardDemoProps) {
               <div className="flex justify-center items-center flex-col">
                 <motion.h3
                   layoutId={`title-${card.title}-${id}`}
-                  className="text-sm font-medium text-white bg-black/20 hover:bg-black/30 px-3 py-2 rounded-full backdrop-blur-sm transition-colors"
+                  className="text-sm font-medium text-white bg-black/20 hover:bg-black/30 px-3 py-2 rounded-full backdrop-blur-sm transition-colors w-full truncate text-center"
                 >
                   {card.title}
                 </motion.h3>
