@@ -1,11 +1,21 @@
-# Qdrant Frontend
+# Frontend
 
-## Prerequisites
+Next.js frontend for the Qdrant Hackathon music video processing platform.
 
-- Node.js 18.17 or later
-- npm, yarn, pnpm, or bun package manager
-- [Shadcn UI](https://ui.shadcn.com/) - UI component library
-- [Aceternity UI](https://ui.aceternity.com/) - Animated UI components
+> **Note**: For complete project setup and overview, see the [main README](../README.md) in the project root.
+
+## Quick Start
+
+1. **Install**: `bun install` (or npm/yarn/pnpm install)
+2. **Run**: `bun dev` (or npm/yarn/pnpm run dev)
+3. **Open**: `http://localhost:3000`
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Styling**: Tailwind CSS
+- **UI Libraries**: [Shadcn UI](https://ui.shadcn.com/), [Aceternity UI](https://ui.aceternity.com/)
+- **Animations**: Framer Motion
 
 ## Setup
 

@@ -1,14 +1,22 @@
-# Qdrant Hackathon Backend
+# Backend API
 
-Backend API for a music video processing platform with AI-powered song recommendations using Qdrant vector database.
+Flask-based backend API for the Qdrant Hackathon music video processing platform.
 
-## Features
+> **Note**: For complete project setup and overview, see the [main README](../README.md) in the project root.
 
-- **AI-Powered Recommendations**: Uses Qdrant vector database and sentence transformers for semantic song matching
-- **File Upload & Processing**: Handle video, audio, and image file uploads
-- **RESTful API**: Built with Flask-RESTX with automatic Swagger documentation
-- **Vector Search**: Semantic similarity search for song recommendations
-- **CORS Support**: Configured for frontend integration
+## Quick Start
+
+1. **Start Qdrant**: `docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant`
+2. **Install**: `pip install -r requirements.txt`
+3. **Run**: `python app.py`
+4. **Docs**: Visit `http://localhost:5000/docs/`
+
+## Core Features
+
+- **AI-Powered Recommendations**: Semantic song matching with Qdrant vector database
+- **File Processing**: Video, audio, and image upload handling
+- **RESTful API**: Flask-RESTX with automatic Swagger documentation
+- **Vector Search**: Real-time similarity search for recommendations
 
 ## API Endpoints
 
