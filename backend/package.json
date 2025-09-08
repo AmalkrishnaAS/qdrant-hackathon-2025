@@ -1,0 +1,36 @@
+{
+  "name": "qdrant-hackathon-backend",
+  "version": "1.0.0",
+  "description": "Backend API for music video processing with AI-powered recommendations using Qdrant vector database",
+  "main": "app.py",
+  "scripts": {
+    "install": "pip install -r requirements.txt",
+    "dev": "python app.py",
+    "start": "gunicorn --bind 0.0.0.0:5000 app:app",
+    "init-qdrant": "python -c \"from app.services.data_service import DataService; from app.services.qdrant_service import QdrantService; from config.config import DevelopmentConfig; qs = QdrantService(DevelopmentConfig.QDRANT_HOST, DevelopmentConfig.QDRANT_PORT); ds = DataService(qs); ds.initialize_data()\"",
+    "test": "python -m pytest tests/ -v",
+    "lint": "flake8 app/ config/ --max-line-length=100"
+  },
+  "keywords": [
+    "flask",
+    "qdrant",
+    "vector-database",
+    "music-processing",
+    "ai-recommendations",
+    "video-processing"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "gunicorn": "latest"
+  },
+  "engines": {
+    "python": ">=3.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  }
+}
+
