@@ -26,20 +26,7 @@ export default function SettingsPage() {
     }
   }, []);
 
-  const saveRegion = async () => {
-    setSaving(true);
-    try {
-      await fetch('/api/settings/region', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ region, count }),
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const saveCount = async () => {
+  const saveSettings = async () => {
     setSaving(true);
     try {
       await fetch('/api/settings/region', {
@@ -90,9 +77,6 @@ export default function SettingsPage() {
               >
                 {regions.map(r => <option key={r} value={r}>{formatRegionLabel(r)}</option>)}
               </select>
-              <Button onClick={saveRegion} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
-              </Button>
             </div>
           </div>
         </div>
@@ -112,11 +96,14 @@ export default function SettingsPage() {
                 onChange={(e) => setCount(Math.max(1, Math.min(50, parseInt(e.target.value || '1', 10))))}
                 className="w-24 border rounded-md px-3 py-2 bg-background"
               />
-              <Button onClick={saveCount} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
-              </Button>
             </div>
           </div>
+        </div>
+        <Separator />
+        <div className="p-4 flex justify-end">
+          <Button onClick={saveSettings} disabled={saving}>
+            {saving ? 'Saving…' : 'Save settings'}
+          </Button>
         </div>
       </div>
     </div>

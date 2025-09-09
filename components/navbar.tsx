@@ -31,14 +31,14 @@ export function FloatingDockDemo() {
       icon: (
         <IconMusic className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
-      href: "#",
+      href: "/library",
     },
     {
       title: "Explore",
       icon: (
         <IconCompass className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
-      href: "#",
+      href: "explore",
     },
     {
       title: "Trending Music",
@@ -61,7 +61,7 @@ export function FloatingDockDemo() {
       icon: (
         <IconClock className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
-      href: "#",
+      href: "tasks",
     },
     {
       title: "Contribute",
