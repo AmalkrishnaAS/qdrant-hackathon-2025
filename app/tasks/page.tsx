@@ -83,7 +83,7 @@ export default function TasksPage() {
   const completedTasks = tasks.filter(t => t.status === 'completed' || t.status === 'failed');
 
   return (
-    <div className=" p-4 md:p-12 mt-20 max-w-3xl mx-auto space-y-6">
+    <div className=" p-4 md:p-12  mt-14 max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Indexing Tasks</h1>
         <p className="text-sm text-muted-foreground">Track the progress of song vectorization and indexing</p>

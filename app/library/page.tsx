@@ -67,7 +67,7 @@ export default function LibraryPage() {
     };
 
     return (
-        <div className="p-4 md:p-12 mt-20 max-w-6xl mx-auto space-y-6 pb-16">
+        <div className="p-4 md:p-12 mt-20 max-w-6xl mx-auto space-y-6 md:pb-16">
             <div>
                 <h1 className="text-2xl font-semibold">Your Library</h1>
                 <p className="text-sm text-muted-foreground">
@@ -175,9 +175,11 @@ export default function LibraryPage() {
                                         </div>
                                     </div>
 
-                                    {/* Album */}
+                                    {/* Album / Channel */}
                                     <div className="col-span-3">
-                                        <div className="text-sm text-muted-foreground">{song.album || 'YouTube'}</div>
+                                        <div className="text-sm text-muted-foreground">
+                                            {song.album || song.artists[0] || 'YouTube'}
+                                        </div>
                                     </div>
 
                                     {/* Date Added */}
