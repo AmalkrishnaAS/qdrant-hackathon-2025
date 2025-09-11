@@ -6,10 +6,72 @@ Flask-based backend API for the Qdrant Hackathon music video processing platform
 
 ## Quick Start
 
-1. **Start Qdrant**: `docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant`
-2. **Install**: `pip install -r requirements.txt`
-3. **Run**: `python app.py`
-4. **Docs**: Visit `http://localhost:5000/docs/`
+### Prerequisites
+- Python 3.8+
+- Docker and Docker Compose (for running Qdrant and Redis)
+- Bun package manager (for frontend development)
+
+### Local Development Setup
+
+1. **Clone the repository** (if you haven't already)
+   ```bash
+   git clone https://github.com/your-username/qdrant-hackathon-2025.git
+   cd qdrant-hackathon-2025/backend
+   ```
+
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit the `.env` file with your configuration (see [Configuration](#configuration) section below).
+
+3. **Start the required services** (Qdrant and Redis)
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Set up a virtual environment and install dependencies**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+5. **Initialize the database**
+   ```bash
+   python run.py init-db
+   ```
+
+6. **Run the development server**
+   ```bash
+   python app.py
+   ```
+   Or run with hot reload:
+   ```bash
+   flask run --debug
+   ```
+
+7. **Run Celery worker** (in a separate terminal)
+   ```bash
+   celery -A celery_worker.celery worker --loglevel=info
+   ```
+
+8. **Access the API documentation**
+   Visit [http://localhost:5000/docs/](http://localhost:5000/docs/) for interactive API documentation.
+
+## Configuration
+
+Copy `.env.example` to `.env` and update the following variables as needed:
+
+- `SECRET_KEY`: A secret key for Flask session management
+- `QDRANT_*`: Configure your Qdrant connection
+- `UPSTASH_REDIS_*`: Required for Redis caching
+- `CELERY_*`: Configure Celery broker and result backend
+- `CORS_ORIGINS`: Comma-separated list of allowed origins
+
+For development, you can use the default values in `.env.example` with the following services running:
+- Qdrant: `localhost:6333` (started via Docker Compose)
+- Redis: `localhost:6379` (started via Docker Compose)
 
 ## Core Features
 
