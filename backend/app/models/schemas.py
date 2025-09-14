@@ -55,11 +55,16 @@ class FileUpload(BaseModel):
     file_type: str
     upload_path: str
     created_at: datetime = Field(default_factory=datetime.now)
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
 
 class UploadResponse(BaseModel):
     """Response model for file upload"""
     success: bool = True
-    data: FileUpload
+    data: List[FileUpload]
     message: Optional[str] = None
 
 class RecommendationRequest(BaseModel):
@@ -109,4 +114,3 @@ class HealthResponse(BaseModel):
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
-
