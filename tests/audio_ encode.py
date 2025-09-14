@@ -1,6 +1,5 @@
 import os
 import youtube_dl
-import librosa
 import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams
@@ -25,14 +24,13 @@ def download_audio(video_id, output_path="downloads"):
     }
 
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        return os.path.join(output_path, f"{info['id']}.mp3"), info
+        return os.path.join(output_path, f"{video_id}.mp3")
 
 # ------------------ STEP 2: Vectorize Audio ------------------
 def vectorize_audio(file_path, target_dim=1024):
 
 # ------------------ STEP 3: Store in Qdrant ------------------
-def store_in_qdrant(video_id, vector, info):
+ddef store_in_qdrant(video_id, vector):
     client = QdrantClient(url=QDRANT_URL)
 
     # Create / reset collection
@@ -41,18 +39,13 @@ def store_in_qdrant(video_id, vector, info):
         vectors_config=VectorParams(size=len(vector), distance="Cosine"),
     )
 
-    payload = {
-        "video_id": info.get("id"),
-        "title": info.get("title"),
-        "uploader": info.get("uploader"),
-        "duration": info.get("duration"),
-        "description": info.get("description"),
-        "tags": info.get("tags"),
-        "view_count": info.get("view_count"),
-        "like_count": info.get("like_count"),
-        "url": info.get("webpage_url"),
-    }
+    point = PointStruct(
+        id=video_id,     
+        vector=vector,    
+        payload={}        
+    )
 
+    client.upsert(collection_name=QDRANT_COLLECTION, points=[point])
     point = PointStruct(
         id=video_id,
         vector=vector,
