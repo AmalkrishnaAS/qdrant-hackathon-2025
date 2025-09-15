@@ -19,12 +19,17 @@ export const FileUpload = () => {
   };
 
   const { getRootProps, isDragActive } = useDropzone({
-    multiple: true,
+    multiple: false,
     noClick: true,
-    onDrop: handleFileChange,
-    onDropRejected: (error) => {
-      console.log(error);
+    accept: {
+      'video/*': []
     },
+    onDrop: handleFileChange,
+    onDropRejected: (rejections) => {
+      console.log('Rejected files:', rejections);
+      // You can add user feedback here if needed
+    },
+    maxFiles: 1
   });
 
   return (
@@ -37,17 +42,24 @@ export const FileUpload = () => {
           ref={fileInputRef}
           id="file-upload-handle"
           type="file"
-          multiple
-          onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+          accept="video/*"
+          onChange={(e) => {
+            const files = e.target.files ? Array.from(e.target.files) : [];
+            const videoFiles = files.filter(file => file.type.startsWith('video/'));
+            handleFileChange(videoFiles);
+          }}
           className="hidden"
         />
         <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]">
           <GridPattern />
         </div>
         <div className="flex flex-col items-center justify-start relative z-10 h-full">
-          <p className="font-sans font-bold text-neutral-700 dark:text-neutral-300 text-base mb-2">
-            Upload Images / Video
-          </p>
+          <div className="text-center">
+            <p className="font-sans font-bold text-neutral-700 dark:text-neutral-300 text-base mb-1">
+              Upload Video
+            </p>
+            <p className="text-xs text-muted-foreground">MP4, WebM, MOV, etc.</p>
+          </div>
           <p className="text-center font-sans font-normal text-neutral-400 dark:text-neutral-400 text-sm mb-4">
             Drag & drop your files here or click to browse
           </p>
