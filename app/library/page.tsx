@@ -46,7 +46,7 @@ export default function LibraryPage() {
     const filteredSongs = songs.filter(song =>
         song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         song.artists.join(' ').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        song.album.toLowerCase().includes(searchQuery.toLowerCase())
+        (song.album && song.album.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     const handlePlay = (song: Song) => {
@@ -121,7 +121,7 @@ export default function LibraryPage() {
                     <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground">
                         <div className="col-span-1">#</div>
                         <div className="col-span-5">Title</div>
-                        <div className="col-span-3">Album</div>
+                        <div className="col-span-3">Channel</div>
                         <div className="col-span-2">Date Added</div>
                         <div className="col-span-1">Duration</div>
                     </div>
