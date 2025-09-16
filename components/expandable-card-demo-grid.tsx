@@ -6,6 +6,8 @@ import { useOutsideClick } from "@/hooks/use-outside-click";
 import { items as defaultItems } from "@/app/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api-client";
+import { toast } from "sonner";
 
 interface ExpandableCardDemoProps {
   cards: typeof defaultItems;
@@ -13,8 +15,23 @@ interface ExpandableCardDemoProps {
 
 export default function ExpandableCardDemo({ cards }: ExpandableCardDemoProps) {
   const [active, setActive] = useState<(typeof cards)[number] | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
   const id = useId();
   const ref = useRef<HTMLDivElement | null>(null);
+
+  const handleAddToLibrary = async (videoId: string) => {
+    try {
+      setIsAdding(true);
+      const response = await apiClient.post('/api/tasks', { video_id: videoId });
+      
+      toast.success(`Added to library: ${response.data.status}`);
+    } catch (error) {
+      console.error('Error adding to library:', error);
+      toast.error('Failed to add to library');
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -109,8 +126,16 @@ export default function ExpandableCardDemo({ cards }: ExpandableCardDemoProps) {
                     exit={{ opacity: 0 }}
                     className="flex gap-2"
                   >
-                    <Button variant="orange" className="px-2 py-1 text-sm font-bold">
-                      Add to Library
+                    <Button 
+                      variant="orange" 
+                      className="px-2 py-1 text-sm font-bold"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToLibrary(active.videoId);
+                      }}
+                      disabled={isAdding}
+                    >
+                      {isAdding ? 'Adding...' : 'Add to Library'}
                     </Button>
                     <Button variant="orange" className="px-2 py-1 text-sm font-bold"
                     onClick={() => window.open(`https://music.youtube.com/watch?v=${active.videoId}`, '_blank')}

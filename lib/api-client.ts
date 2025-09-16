@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 // Base URL can be overridden via NEXT_PUBLIC_API_BASE_URL for different environments
-const BASE_URL: string = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5000';
+const BASE_URL: string = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:5001';
 
 // In-memory auth token cache to avoid repeated localStorage access
 let cachedAuthToken: string | null = null;
