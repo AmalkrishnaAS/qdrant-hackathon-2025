@@ -15,12 +15,13 @@ class Config:
     QDRANT_API_KEY = config('QDRANT_API_KEY', default=None)
     QDRANT_COLLECTION_NAME = config('QDRANT_COLLECTION_NAME', default='music_embeddings')
 
-    # Upstash Configuration
-    UPSTASH_REDIS_REST_URL = config('UPSTASH_REDIS_REST_URL')
-    UPSTASH_REDIS_REST_TOKEN = config('UPSTASH_REDIS_REST_TOKEN')
+    # Upstash Configuration (optional)
+    UPSTASH_REDIS_REST_URL = config('UPSTASH_REDIS_REST_URL', default=None)
+    UPSTASH_REDIS_REST_TOKEN = config('UPSTASH_REDIS_REST_TOKEN', default=None)
 
-    CELERY_BROKER_URL = config('CELERY_BROKER_URL')
-    CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
+    # Celery Configuration (optional)
+    CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+    CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
     # File Upload Configuration
     UPLOAD_FOLDER = config('UPLOAD_FOLDER', default='uploads')
     MAX_CONTENT_LENGTH = config('MAX_CONTENT_LENGTH', default=100 * 1024 * 1024, cast=int)  # 100MB
@@ -36,6 +37,13 @@ class Config:
 
     # Embedding Model Configuration
     SENTENCE_TRANSFORMER_MODEL = config('SENTENCE_TRANSFORMER_MODEL', default='all-MiniLM-L6-v2')
+    
+    # AI Service API Keys
+    GEMINI_API_KEY = config('GEMINI_API_KEY', default=None)
+    YOUTUBE_API_KEY = config('YOUTUBE_API_KEY', default=None)
+    
+    # CLAP Model Configuration
+    CLAP_MODEL_NAME = config('CLAP_MODEL_NAME', default='laion/clap-htsat-unfused')
 
 class DevelopmentConfig(Config):
     """Development configuration"""

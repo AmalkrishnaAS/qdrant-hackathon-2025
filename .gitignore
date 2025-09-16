@@ -103,18 +103,32 @@ yarn-error.log*
 /coverage
 
 # Frontend - Next.js
-/.next/
+.next/
 /out/
 next-env.d.ts
 
 # Frontend - production
 /build
+build/
 
 # Frontend - Vercel
 .vercel
 
 # Frontend - TypeScript
 *.tsbuildinfo
+types/routes.d.ts
+
+# Frontend - Bun
+bun.lockb
+
+# Frontend - ESLint
+.eslintcache
+
+# Frontend - Turbopack
+.turbo/
+
+# Frontend - SWC
+.swc/
 
 # OS
 .DS_Store

@@ -50,6 +50,13 @@ def create_app(config_name=None):
     api.add_namespace(health_api, path='/health')
     api.add_namespace(tasks_api, path='/tasks')
     
+    # Try to register AI recommendations API if available
+    try:
+        from app.api.recommendations import api as recommendations_api
+        api.add_namespace(recommendations_api, path='/recommendations')
+    except ImportError as e:
+        print(f"AI recommendations API not available: {e}")
+    
     return app
 
 # REMOVE THESE LINES FROM THE BOTTOM OF THE FILE

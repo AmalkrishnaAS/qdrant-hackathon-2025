@@ -4,6 +4,13 @@ from werkzeug.exceptions import BadRequest, NotFound
 from app.models.schemas import Song, SongResponse, RecommendationRequest, RecommendationResponse, ErrorResponse
 from app.services.qdrant_service import QdrantService
 from app.services.data_service import DataService
+try:
+    from app.services.recommendation_service import RecommendationService
+    AI_SERVICES_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"AI services not available: {e}")
+    RecommendationService = None
+    AI_SERVICES_AVAILABLE = False
 import logging
 import os
 
@@ -68,7 +75,20 @@ def get_services():
         api_key=current_app.config.get('QDRANT_API_KEY')
     )
     data_service = DataService(qdrant_service)
-    return qdrant_service, data_service
+    
+    recommendation_service = None
+    if AI_SERVICES_AVAILABLE and RecommendationService:
+        try:
+            recommendation_service = RecommendationService(
+                qdrant_host=current_app.config['QDRANT_HOST'],
+                qdrant_port=current_app.config['QDRANT_PORT'],
+                qdrant_api_key=current_app.config.get('QDRANT_API_KEY')
+            )
+        except Exception as e:
+            logger.warning(f"Failed to initialize recommendation service: {e}")
+            recommendation_service = None
+    
+    return qdrant_service, data_service, recommendation_service
 
 @api.route('/trending')
 class TrendingSongs(Resource):
@@ -84,31 +104,29 @@ class TrendingSongs(Resource):
             limit = request.args.get('limit', 10, type=int)
             limit = min(max(limit, 1), 50)  # Ensure limit is between 1 and 50
             
-            qdrant_service, data_service = get_services()
+            qdrant_service, data_service, recommendation_service = get_services()
             
-            # Initialize data if needed
-            data_service.initialize_data()
-            
-            # Get trending songs from Qdrant
-            trending_results = qdrant_service.get_trending_songs(limit=limit)
-            
-            if not trending_results:
-                # Fallback to initial songs if Qdrant returns empty
-                logger.info("No trending results from Qdrant, using fallback data")
-                songs = data_service.get_all_songs()[:limit]
+            if recommendation_service:
+                try:
+                    # Try to get trending recommendations from the music database
+                    songs = recommendation_service.get_trending_recommendations(limit=limit)
+                    
+                    if not songs:
+                        # Fallback to data service if recommendation service fails
+                        logger.info("No trending results from recommendation service, using fallback data")
+                        data_service.initialize_data()
+                        songs = data_service.get_all_songs()[:limit]
+                        
+                except Exception as e:
+                    logger.warning(f"Error getting trending recommendations: {e}")
+                    # Fallback to data service
+                    data_service.initialize_data()
+                    songs = data_service.get_all_songs()[:limit]
             else:
-                # Convert Qdrant results back to Song objects
-                songs = []
-                for result in trending_results:
-                    try:
-                        # Get full song data
-                        song_id = result['id']
-                        song = data_service.get_song_by_id(song_id)
-                        if song:
-                            songs.append(song)
-                    except Exception as e:
-                        logger.warning(f"Error converting result to song: {e}")
-                        continue
+                # No AI services available, use fallback data
+                logger.info("AI services not available, using fallback data")
+                data_service.initialize_data()
+                songs = data_service.get_all_songs()[:limit]
             
             response = SongResponse(
                 data=songs,
@@ -144,47 +162,49 @@ class Recommendations(Resource):
             # Validate request
             req = RecommendationRequest(**data)
             
-            qdrant_service, data_service = get_services()
+            qdrant_service, data_service, recommendation_service = get_services()
             
-            # Initialize data if needed
-            data_service.initialize_data()
-            
-            # Generate recommendations
-            if req.query:
-                # Use text query for recommendations
-                logger.info(f"Getting recommendations for query: {req.query}")
-                results = qdrant_service.search_similar_songs(
-                    query=req.query, 
-                    limit=req.limit
-                )
-            elif req.uploaded_files:
-                # For now, use a generic query based on uploaded files
-                # In production, you'd analyze the uploaded files to generate embeddings
-                logger.info(f"Getting recommendations for {len(req.uploaded_files)} uploaded files")
-                generic_query = "popular trending music videos songs"
-                results = qdrant_service.search_similar_songs(
-                    query=generic_query, 
-                    limit=req.limit
-                )
-            else:
-                # Default recommendations
-                logger.info("Getting default recommendations")
-                results = qdrant_service.get_trending_songs(limit=req.limit)
-            
-            # Convert results to Song objects
-            songs = []
-            for result in results:
+            # Generate recommendations using the new recommendation service
+            if recommendation_service:
                 try:
-                    song_id = result['id']
-                    song = data_service.get_song_by_id(song_id)
-                    if song:
-                        songs.append(song)
+                    if req.query:
+                        # Use text query for recommendations
+                        logger.info(f"Getting recommendations for query: {req.query}")
+                        songs = recommendation_service.recommend_by_text_query(
+                            query=req.query, 
+                            limit=req.limit
+                        )
+                    elif req.uploaded_files:
+                        # For now, analyze the first uploaded file if it's a video
+                        # In a real implementation, you'd handle multiple files
+                        logger.info(f"Getting recommendations for {len(req.uploaded_files)} uploaded files")
+                        
+                        # For this demo, we'll use a generic music query
+                        # In production, you'd analyze the uploaded video files
+                        songs = recommendation_service.recommend_by_text_query(
+                            query="energetic upbeat music for videos", 
+                            limit=req.limit
+                        )
+                    else:
+                        # Default recommendations
+                        logger.info("Getting default trending recommendations")
+                        songs = recommendation_service.get_trending_recommendations(limit=req.limit)
+                    
+                    if not songs:
+                        # Fallback to data service
+                        logger.info("No recommendations from service, using fallback data")
+                        data_service.initialize_data()
+                        songs = data_service.get_all_songs()[:req.limit]
+                        
                 except Exception as e:
-                    logger.warning(f"Error converting recommendation result: {e}")
-                    continue
-            
-            if not songs:
-                # Fallback to some default songs
+                    logger.warning(f"Error getting recommendations from service: {e}")
+                    # Fallback to data service
+                    data_service.initialize_data()
+                    songs = data_service.get_all_songs()[:req.limit]
+            else:
+                # No AI services available, use fallback data
+                logger.info("AI services not available, using fallback data")
+                data_service.initialize_data()
                 songs = data_service.get_all_songs()[:req.limit]
             
             response = RecommendationResponse(
@@ -231,7 +251,7 @@ class SongsList(Resource):
             category = request.args.get('category')
             limit = min(max(limit, 1), 100)  # Ensure limit is between 1 and 100
             
-            qdrant_service, data_service = get_services()
+            qdrant_service, data_service, recommendation_service = get_services()
             
             # Initialize data if needed
             data_service.initialize_data()
@@ -274,7 +294,7 @@ class DownloadSong(Resource):
         Returns the processed audio/video file for download
         """
         try:
-            qdrant_service, data_service = get_services()
+            qdrant_service, data_service, recommendation_service = get_services()
             
             # Get song info
             song = data_service.get_song_by_id(song_id)
