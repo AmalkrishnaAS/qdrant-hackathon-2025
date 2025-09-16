@@ -23,7 +23,9 @@ def create_app(config_name=None):
 
     
     # Initialize extensions
-    CORS(app, origins=app.config['CORS_ORIGINS'])
+    CORS(app)
+    cors=CORS(app,resources={r"/": {"origins": ""}}, support_credentials=True)
+
     
     # Initialize Flask-RESTX API
     api = Api(

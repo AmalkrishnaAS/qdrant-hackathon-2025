@@ -1,9 +1,14 @@
+import logging
+import os
 from flask_restx import Namespace, Resource, fields, reqparse
 from flask import current_app, request, send_file, abort
 from werkzeug.exceptions import BadRequest, NotFound
 from app.models.schemas import Song, SongResponse, RecommendationRequest, RecommendationResponse, ErrorResponse
 from app.services.qdrant_service import QdrantService
 from app.services.data_service import DataService
+
+logger = logging.getLogger(__name__)
+
 try:
     from app.services.recommendation_service import RecommendationService
     AI_SERVICES_AVAILABLE = True
@@ -11,10 +16,6 @@ except ImportError as e:
     logger.warning(f"AI services not available: {e}")
     RecommendationService = None
     AI_SERVICES_AVAILABLE = False
-import logging
-import os
-
-logger = logging.getLogger(__name__)
 
 # Create namespace
 api = Namespace('songs', description='Song operations')

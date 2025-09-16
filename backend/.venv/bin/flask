@@ -1,4 +1,4 @@
-#!/Users/amalkrishnaas/qdrant-backend/backend/.venv/bin/python3.10
+#!/Users/amalkrishnaas/qdrant-backend/backend/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

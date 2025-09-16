@@ -8,12 +8,13 @@ class Config:
     """Base configuration class"""
     SECRET_KEY = config('SECRET_KEY', default='dev-secret-key-change-in-production')
     DEBUG = config('DEBUG', default=True, cast=bool)
+    
 
     # Qdrant Configuration
     QDRANT_HOST = config('QDRANT_HOST', default='localhost')
     QDRANT_PORT = config('QDRANT_PORT', default=6333, cast=int)
     QDRANT_API_KEY = config('QDRANT_API_KEY', default=None)
-    QDRANT_COLLECTION_NAME = config('QDRANT_COLLECTION_NAME', default='music_embeddings')
+    QDRANT_COLLECTION_NAME = config('QDRANT_COLLECTION_NAME', default='youtube_audio_embeddings')
 
     # Upstash Configuration (optional)
     UPSTASH_REDIS_REST_URL = config('UPSTASH_REDIS_REST_URL', default=None)
@@ -34,7 +35,8 @@ class Config:
 
     # CORS Configuration
     CORS_ORIGINS = config('CORS_ORIGINS', default='http://localhost:3000,http://localhost:3001').split(',')
-
+    CORS_HEADERS = ['Content-Type','x-access-token']
+    CORS_SUPPORTS_CREDENTIALS = True
     # Embedding Model Configuration
     SENTENCE_TRANSFORMER_MODEL = config('SENTENCE_TRANSFORMER_MODEL', default='all-MiniLM-L6-v2')
     

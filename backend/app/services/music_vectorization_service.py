@@ -13,6 +13,7 @@ from qdrant_client.models import PointStruct, VectorParams, Distance
 from googleapiclient.discovery import build
 from pathlib import Path
 import tempfile
+from config.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,8 @@ class MusicVectorizationService:
         self.model_name = model_name
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.target_sr = 48000
-        self.vector_dim = 512
+        # Match dimension with Qdrant collection (all-MiniLM-L6-v2 uses 384 dimensions)
+        self.vector_dim = 384
         
         # Initialize CLAP model
         try:
@@ -47,7 +49,7 @@ class MusicVectorizationService:
             port=qdrant_port, 
             api_key=qdrant_api_key
         )
-        self.collection_name = "youtube_audio_vectors"
+        self.collection_name = Config.QDRANT_COLLECTION_NAME
         
         # Ensure collection exists
         self._ensure_collection_exists()
